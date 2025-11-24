@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đếm Ngày Yêu Nhau</title>
+    <!-- Import Google Fonts: Nunito & Pacifico cho nét chữ dễ thương -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Pacifico&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fffbf0; /* Màu kem nền */
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .title-font {
+            font-family: 'Pacifico', cursive;
+            text-shadow: 2px 2px 0px #fff;
+        }
+
+        /* Hiệu ứng Avatar */
+        .avatar-container {
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        .avatar-container:hover {
+            transform: scale(1.05);
+        }
+        .avatar-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 4px 15px rgba(255, 183, 178, 0.6);
+        }
+
+        /* Hiệu ứng trái tim đập ở giữa */
+        .heart-beat {
+            animation: beat 1.2s infinite;
+        }
+        @keyframes beat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.1); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.1); }
+            70% { transform: scale(1); }
+        }
+
+        /* Đồng hồ số */
+        .clock-box {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Hiệu ứng trái tim bay nền (Background Bokeh) */
+        .bg-heart {
+            position: fixed;
+            color: #ffb7b2;
+            opacity: 0;
+            z-index: -1;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0.5);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.6;
+            }
+            80% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-10vh) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ffb7b2;
+            border-radius: 4px;
+        }
+
+        /* Nút màu hồng */
+        .btn-pink {
+            background: #ff6b81;
+            color: white;
+            transition: all 0.3s;
+        }
+        .btn-pink:hover {
+            background: #ff4757;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 129, 0.4);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center relative">
+
+    <!-- Container nền trái tim bay -->
+    <div id="hearts-container"></div>
+
+    <!-- Nút Cài đặt -->
+    <button onclick="toggleSettings()" class="absolute top-4 right-4 text-gray-400 hover:text-pink-500 transition text-2xl z-20">
+        <i class="fas fa-cog"></i>
+    </button>
+
+    <!-- Main Content -->
+    <div class="text-center w-full max-w-2xl px-4 py-10 z-10">
+        
+        <!-- Tiêu đề -->
+        <h1 class="title-font text-4xl md:text-5xl text-red-400 mb-12 tracking-wide">
+            Đếm ngày yêu nhau
+        </h1>
+
+        <!-- Khu vực Avatar và Số ngày -->
+        <div class="flex items-center justify-center gap-4 md:gap-12 mb-10 relative">
+            
+            <!-- Bạn Nam/Trái -->
+            <div class="flex flex-col items-center gap-2">
+                <div class="avatar-container relative">
+                    <img id="img1" src="https://ui-avatars.com/api/?name=Love+Me&background=ffb7b2&color=fff&size=128" alt="You" class="avatar-img bg-blue-100">
+                    <!-- Icon trang trí nhỏ -->
+                    <div class="absolute -top-2 -right-2 text-red-400 text-xl animate-bounce">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                </div>
+                <span id="name1" class="font-bold text-gray-600 text-lg font-serif">Love me</span>
+            </div>
+
+            <!-- Trái tim & Số ngày -->
+            <div class="flex flex-col items-center justify-center -mt-6">
+                <i class="fas fa-heart text-5xl text-pink-400 heart-beat mb-2 filter drop-shadow-lg"></i>
+                <div class="text-center">
+                    <span id="days-count" class="block text-5xl font-black text-red-400 leading-tight">0</span>
+                    <span class="text-red-300 font-bold font-serif tracking-widest text-sm uppercase">Ngày rùi nè..</span>
+                </div>
+            </div>
+
+            <!-- Bạn Nữ/Phải -->
+            <div class="flex flex-col items-center gap-2">
+                <div class="avatar-container relative">
+                    <img id="img2" src="https://ui-avatars.com/api/?name=Love+You&background=ffb7b2&color=fff&size=128" alt="Partner" class="avatar-img bg-pink-100">
+                     <div class="absolute -top-2 -left-2 text-pink-400 text-xl animate-bounce" style="animation-delay: 0.5s;">
+                        <i class="fas fa-kiss-wink-heart"></i>
+                    </div>
+                </div>
+                <span id="name2" class="font-bold text-gray-600 text-lg font-serif">Love you</span>
+            </div>
+        </div>
+
+        <!-- Đồng hồ đếm giờ -->
+        <div class="flex justify-center items-center gap-4 mb-16 text-2xl md:text-3xl text-gray-700">
+            <div class="clock-box px-4 py-3 min-w-[70px]">
+                <span id="hours">00</span>
+            </div>
+            <span class="text-gray-400 font-bold">:</span>
+            <div class="clock-box px-4 py-3 min-w-[70px]">
+                <span id="minutes">00</span>
+            </div>
+            <span class="text-gray-400 font-bold">:</span>
+            <div class="clock-box px-4 py-3 min-w-[70px]">
+                <span id="seconds">00</span>
+            </div>
+        </div>
+
+        <!-- Nút hành động -->
+        <button class="btn-pink px-8 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 mx-auto">
+            <i class="fas fa-images"></i> Ảnh chúng mình
+        </button>
+
+        <p class="mt-8 text-gray-400 italic text-sm">From with ❤️</p>
+    </div>
+
+    <!-- Modal Cài đặt (Ẩn mặc định) -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-6 w-11/12 max-w-md shadow-2xl transform transition-all scale-100">
+            <h2 class="text-2xl font-bold text-gray-700 mb-4 text-center">💖 Cài đặt tình yêu</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Ngày bắt đầu yêu:</label>
+                    <input type="date" id="start-date-input" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-pink-300 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Tên bạn (Trái):</label>
+                        <input type="text" id="name1-input" class="w-full border rounded-lg p-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Tên người ấy (Phải):</label>
+                        <input type="text" id="name2-input" class="w-full border rounded-lg p-2 text-sm">
+                    </div>
+                </div>
+
+                <!-- Upload ảnh -->
+                <div>
+                     <label class="block text-sm font-medium text-gray-600 mb-1">Ảnh đại diện (Link hoặc chọn file):</label>
+                     <div class="flex gap-2">
+                        <button onclick="document.getElementById('file-upload-1').click()" class="flex-1 bg-blue-100 text-blue-600 py-2 rounded hover:bg-blue-200 text-xs">
+                            <i class="fas fa-upload"></i> Ảnh trái
+                        </button>
+                        <button onclick="document.getElementById('file-upload-2').click()" class="flex-1 bg-pink-100 text-pink-600 py-2 rounded hover:bg-pink-200 text-xs">
+                            <i class="fas fa-upload"></i> Ảnh phải
+                        </button>
+                     </div>
+                     <input type="file" id="file-upload-1" class="hidden" accept="image/*" onchange="handleImageUpload(this, 'img1')">
+                     <input type="file" id="file-upload-2" class="hidden" accept="image/*" onchange="handleImageUpload(this, 'img2')">
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="toggleSettings()" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">Đóng</button>
+                <button onclick="saveSettings()" class="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 shadow">Lưu lại</button>
+            </div>
+        </div>
+    </div>
+    <audio id="player" src="./assets/KhongThoiGian.mp3" autoplay></audio>
+    <script>
+        // --- 1. Tạo hiệu ứng nền trái tim bay ---
+        const heartsContainer = document.getElementById('hearts-container');
+        const colors = ['#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea'];
+
+        function createHeart() {
+            const heart = document.createElement('i');
+            heart.classList.add('fas', 'fa-heart', 'bg-heart');
+            
+            // Random vị trí và kích thước
+            const size = Math.random() * 20 + 10 + 'px';
+            heart.style.fontSize = size;
+            heart.style.left = Math.random() * 100 + 'vw';
+            
+            // Random màu
+            heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Random thời gian animation
+            const duration = Math.random() * 5 + 5 + 's';
+            heart.style.animationDuration = duration;
+
+            heartsContainer.appendChild(heart);
+
+            // Xóa sau khi bay xong để nhẹ máy
+            setTimeout(() => {
+                heart.remove();
+            }, parseFloat(duration) * 1000);
+        }
+
+        setInterval(createHeart, 500); // Tạo trái tim mỗi 0.5s
+
+        // --- 2. Logic Đếm ngày & Lưu trữ ---
+        
+        // Mặc định
+        let loveData = {
+            startDate: "2025-03-22",
+            name1: "Iu cục vàng",
+            name2: "Cục vàng",
+            img1: "/assets/VT.jpg", // Placeholder cute
+            img2: "/assets/PH.jpg"  // Placeholder cute
+        };
+
+        // Load từ LocalStorage nếu có
+        if(localStorage.getItem('loveData')) {
+            loveData = JSON.parse(localStorage.getItem('loveData'));
+        }
+
+        // Cập nhật giao diện ban đầu
+        function updateUI() {
+            document.getElementById('name1').innerText = loveData.name1;
+            document.getElementById('name2').innerText = loveData.name2;
+            document.getElementById('img1').src = loveData.img1;
+            document.getElementById('img2').src = loveData.img2;
+            document.getElementById('start-date-input').value = loveData.startDate;
+            document.getElementById('name1-input').value = loveData.name1;
+            document.getElementById('name2-input').value = loveData.name2;
+        }
+
+        // Hàm tính toán thời gian
+        function updateTimer() {
+            const start = new Date(loveData.startDate).getTime();
+            const now = new Date().getTime();
+            const distance = now - start;
+
+            if (distance < 0) {
+                // Ngày trong tương lai
+                document.getElementById('days-count').innerText = "0";
+                return;
+            }
+
+            // Tính toán
+            const oneDay = 1000 * 60 * 60 * 24;
+            const days = Math.floor(distance / oneDay);
+            
+            // Tính giờ phút giây cho phần dư của ngày hiện tại
+            const hours = Math.floor((distance % oneDay) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Hiển thị
+            document.getElementById('days-count').innerText = days;
+            
+            // Thêm số 0 đằng trước nếu nhỏ hơn 10 (vd: 09)
+            document.getElementById('hours').innerText = hours < 10 ? '0' + hours : hours;
+            document.getElementById('minutes').innerText = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('seconds').innerText = seconds < 10 ? '0' + seconds : seconds;
+        }
+
+        setInterval(updateTimer, 1000);
+        updateUI();
+        updateTimer();
+
+        // --- 3. Xử lý Cài đặt ---
+
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function saveSettings() {
+            loveData.startDate = document.getElementById('start-date-input').value || loveData.startDate;
+            loveData.name1 = document.getElementById('name1-input').value || "Love me";
+            loveData.name2 = document.getElementById('name2-input').value || "Love you";
+            // Ảnh đã được xử lý riêng trong handleImageUpload, chỉ cần lưu object
+            
+            localStorage.setItem('loveData', JSON.stringify(loveData));
+            updateUI();
+            updateTimer();
+            toggleSettings();
+        }
+
+        // Xử lý upload ảnh (chuyển thành Base64 để lưu vào LocalStorage)
+        function handleImageUpload(input, targetImgId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const base64Image = e.target.result;
+                    // Cập nhật object dữ liệu
+                    loveData[targetImgId] = base64Image;
+                    // Preview ngay lập tức (nhưng chưa lưu cho đến khi bấm Save)
+                    document.getElementById(targetImgId).src = base64Image;
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        document.body.addEventListener("click", function () {
+            const player = document.getElementById("player");
+            if (player.paused) {
+                player.play();
+            }
+        });
+
+    </script>
+</body>
+</html>
