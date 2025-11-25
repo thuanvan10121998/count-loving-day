@@ -23,6 +23,11 @@
             font-family: 'Pacifico', cursive;
             text-shadow: 2px 2px 0px #fff;
         }
+        
+        /* Font viết tay cho phần ghi chú ảnh */
+        .handwriting-font {
+            font-family: 'Pacifico', cursive;
+        }
 
         /* Hiệu ứng Avatar */
         .avatar-container {
@@ -88,6 +93,18 @@
             }
         }
 
+        /* Polaroid Frame Style */
+        .polaroid-frame {
+            background: white;
+            padding: 16px 16px 40px 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: rotate(-2deg);
+            transition: transform 0.3s ease;
+        }
+        .polaroid-frame:hover {
+            transform: rotate(0deg) scale(1.02);
+        }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -108,20 +125,37 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 107, 129, 0.4);
         }
+        
+        /* Icon nút trong trang Memories */
+        .memory-btn {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .memory-btn:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center relative">
+<body class="flex flex-col items-center justify-center relative min-h-screen">
 
     <!-- Container nền trái tim bay -->
     <div id="hearts-container"></div>
 
-    <!-- Nút Cài đặt -->
-    <button onclick="toggleSettings()" class="absolute top-4 right-4 text-gray-400 hover:text-pink-500 transition text-2xl z-20">
+    <!-- Nút Cài đặt (Chỉ hiện ở màn hình chính) -->
+    <button id="settings-btn" onclick="toggleSettings()" class="absolute top-4 right-4 text-gray-400 hover:text-pink-500 transition text-2xl z-20">
         <i class="fas fa-cog"></i>
     </button>
 
-    <!-- Main Content -->
-    <div class="text-center w-full max-w-2xl px-4 py-10 z-10">
+    <!-- === SCREEN 1: MAIN CONTENT (ĐẾM NGÀY) === -->
+    <div id="main-screen" class="text-center w-full max-w-2xl px-4 py-10 z-10 transition-opacity duration-500">
         
         <!-- Tiêu đề -->
         <h1 class="title-font text-4xl md:text-5xl text-red-400 mb-12 tracking-wide">
@@ -135,7 +169,6 @@
             <div class="flex flex-col items-center gap-2">
                 <div class="avatar-container relative">
                     <img id="img1" src="https://ui-avatars.com/api/?name=Love+Me&background=ffb7b2&color=fff&size=128" alt="You" class="avatar-img bg-blue-100">
-                    <!-- Icon trang trí nhỏ -->
                     <div class="absolute -top-2 -right-2 text-red-400 text-xl animate-bounce">
                         <i class="fas fa-heart"></i>
                     </div>
@@ -179,15 +212,52 @@
             </div>
         </div>
 
-        <!-- Nút hành động -->
-        <button class="btn-pink px-8 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 mx-auto">
+        <!-- Nút chuyển sang màn hình ảnh -->
+        <button onclick="switchScreen('memories')" class="btn-pink px-8 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 mx-auto">
             <i class="fas fa-images"></i> Ảnh chúng mình
         </button>
 
         <p class="mt-8 text-gray-400 italic text-sm">From with ❤️</p>
     </div>
 
-    <!-- Modal Cài đặt (Ẩn mặc định) -->
+    <!-- === SCREEN 2: MEMORIES (ALBUM ẢNH) === -->
+    <div id="memories-screen" class="hidden w-full max-w-4xl px-4 z-10 flex flex-col md:flex-row items-center justify-center gap-10 transition-opacity duration-500">
+        
+        <!-- Cột trái: Text hướng dẫn & Nút bấm -->
+        <div class="flex flex-col items-center md:items-start space-y-6">
+            <div class="handwriting-font text-2xl md:text-3xl text-gray-700 text-center md:text-left leading-relaxed transform -rotate-2">
+                Nhấn vào máy ảnh để <br>
+                xem ảnh chung ❤️😘❤️
+            </div>
+            
+            <div class="flex gap-4 mt-4">
+                <!-- Nút tải ảnh (Camera icon) -->
+                <button onclick="document.getElementById('memory-upload').click()" class="memory-btn bg-gray-800 text-white hover:bg-gray-700" title="Đổi ảnh">
+                    <i class="fas fa-camera"></i>
+                </button>
+                <!-- Input ẩn để upload ảnh -->
+                <input type="file" id="memory-upload" class="hidden" accept="image/*" onchange="handleMemoryUpload(this)">
+
+                <!-- Nút quay lại (Back icon) -->
+                <button onclick="switchScreen('main')" class="memory-btn bg-blue-500 text-white hover:bg-blue-600" title="Quay lại">
+                    <i class="fas fa-undo-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Cột phải: Khung ảnh Polaroid -->
+        <div class="polaroid-frame max-w-sm w-full">
+            <div class="bg-gray-200 w-full aspect-[4/3] overflow-hidden flex items-center justify-center">
+                <!-- Ảnh kỷ niệm (Mặc định là ảnh gif cute) https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif-->
+                <img id="memory-img" src="./assets/LOVE.jpg" alt="Our Memory" class="w-full h-full object-cover">
+            </div>
+            <!-- Bạn có thể thêm ngày tháng hoặc caption ở dưới nếu muốn -->
+        </div>
+
+    </div>
+
+
+    <!-- === MODAL CÀI ĐẶT (Giữ nguyên) === -->
     <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
         <div class="bg-white rounded-2xl p-6 w-11/12 max-w-md shadow-2xl transform transition-all scale-100">
             <h2 class="text-2xl font-bold text-gray-700 mb-4 text-center">💖 Cài đặt tình yêu</h2>
@@ -211,7 +281,7 @@
 
                 <!-- Upload ảnh -->
                 <div>
-                     <label class="block text-sm font-medium text-gray-600 mb-1">Ảnh đại diện (Link hoặc chọn file):</label>
+                     <label class="block text-sm font-medium text-gray-600 mb-1">Ảnh đại diện:</label>
                      <div class="flex gap-2">
                         <button onclick="document.getElementById('file-upload-1').click()" class="flex-1 bg-blue-100 text-blue-600 py-2 rounded hover:bg-blue-200 text-xs">
                             <i class="fas fa-upload"></i> Ảnh trái
@@ -240,32 +310,19 @@
         function createHeart() {
             const heart = document.createElement('i');
             heart.classList.add('fas', 'fa-heart', 'bg-heart');
-            
-            // Random vị trí và kích thước
             const size = Math.random() * 20 + 10 + 'px';
             heart.style.fontSize = size;
             heart.style.left = Math.random() * 100 + 'vw';
-            
-            // Random màu
             heart.style.color = colors[Math.floor(Math.random() * colors.length)];
-            
-            // Random thời gian animation
             const duration = Math.random() * 5 + 5 + 's';
             heart.style.animationDuration = duration;
-
             heartsContainer.appendChild(heart);
-
-            // Xóa sau khi bay xong để nhẹ máy
-            setTimeout(() => {
-                heart.remove();
-            }, parseFloat(duration) * 1000);
+            setTimeout(() => { heart.remove(); }, parseFloat(duration) * 1000);
         }
-
-        setInterval(createHeart, 500); // Tạo trái tim mỗi 0.5s
+        setInterval(createHeart, 500);
 
         // --- 2. Logic Đếm ngày & Lưu trữ ---
         
-        // Mặc định
         let loveData = {
             startDate: "2025-03-22",
             name1: "Iu cục vàng",
@@ -274,12 +331,10 @@
             img2: "./assets/PH.jpg"  // Placeholder cute
         };
 
-        // Load từ LocalStorage nếu có
         if(localStorage.getItem('loveData')) {
             loveData = JSON.parse(localStorage.getItem('loveData'));
         }
 
-        // Cập nhật giao diện ban đầu
         function updateUI() {
             document.getElementById('name1').innerText = loveData.name1;
             document.getElementById('name2').innerText = loveData.name2;
@@ -288,33 +343,30 @@
             document.getElementById('start-date-input').value = loveData.startDate;
             document.getElementById('name1-input').value = loveData.name1;
             document.getElementById('name2-input').value = loveData.name2;
+            
+            // Cập nhật ảnh kỷ niệm nếu có
+            if(loveData.memoryImg) {
+                document.getElementById('memory-img').src = loveData.memoryImg;
+            }
         }
 
-        // Hàm tính toán thời gian
         function updateTimer() {
             const start = new Date(loveData.startDate).getTime();
             const now = new Date().getTime();
             const distance = now - start;
 
             if (distance < 0) {
-                // Ngày trong tương lai
                 document.getElementById('days-count').innerText = "0";
                 return;
             }
 
-            // Tính toán
             const oneDay = 1000 * 60 * 60 * 24;
             const days = Math.floor(distance / oneDay);
-            
-            // Tính giờ phút giây cho phần dư của ngày hiện tại
             const hours = Math.floor((distance % oneDay) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            // Hiển thị
             document.getElementById('days-count').innerText = days;
-            
-            // Thêm số 0 đằng trước nếu nhỏ hơn 10 (vd: 09)
             document.getElementById('hours').innerText = hours < 10 ? '0' + hours : hours;
             document.getElementById('minutes').innerText = minutes < 10 ? '0' + minutes : minutes;
             document.getElementById('seconds').innerText = seconds < 10 ? '0' + seconds : seconds;
@@ -324,7 +376,41 @@
         updateUI();
         updateTimer();
 
-        // --- 3. Xử lý Cài đặt ---
+        // --- 3. Xử lý Chuyển màn hình ---
+        
+        function switchScreen(screenName) {
+            const mainScreen = document.getElementById('main-screen');
+            const memoriesScreen = document.getElementById('memories-screen');
+            const settingsBtn = document.getElementById('settings-btn');
+
+            if (screenName === 'memories') {
+                mainScreen.classList.add('hidden');
+                settingsBtn.classList.add('hidden'); // Ẩn nút cài đặt
+                memoriesScreen.classList.remove('hidden');
+                memoriesScreen.classList.add('flex'); // Thêm flex để căn giữa
+            } else {
+                memoriesScreen.classList.add('hidden');
+                memoriesScreen.classList.remove('flex');
+                mainScreen.classList.remove('hidden');
+                settingsBtn.classList.remove('hidden'); // Hiện lại nút cài đặt
+            }
+        }
+
+        // --- 4. Xử lý Upload ảnh chung (Memories) ---
+        function handleMemoryUpload(input) {
+             if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Image = e.target.result;
+                    loveData.memoryImg = base64Image; // Lưu vào data
+                    document.getElementById('memory-img').src = base64Image; // Hiển thị ngay
+                    localStorage.setItem('loveData', JSON.stringify(loveData)); // Lưu cứng
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // --- 5. Xử lý Cài đặt ---
 
         function toggleSettings() {
             const modal = document.getElementById('settings-modal');
@@ -335,7 +421,6 @@
             loveData.startDate = document.getElementById('start-date-input').value || loveData.startDate;
             loveData.name1 = document.getElementById('name1-input').value || "Love me";
             loveData.name2 = document.getElementById('name2-input').value || "Love you";
-            // Ảnh đã được xử lý riêng trong handleImageUpload, chỉ cần lưu object
             
             localStorage.setItem('loveData', JSON.stringify(loveData));
             updateUI();
@@ -343,19 +428,14 @@
             toggleSettings();
         }
 
-        // Xử lý upload ảnh (chuyển thành Base64 để lưu vào LocalStorage)
         function handleImageUpload(input, targetImgId) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                
                 reader.onload = function(e) {
                     const base64Image = e.target.result;
-                    // Cập nhật object dữ liệu
                     loveData[targetImgId] = base64Image;
-                    // Preview ngay lập tức (nhưng chưa lưu cho đến khi bấm Save)
                     document.getElementById(targetImgId).src = base64Image;
                 }
-                
                 reader.readAsDataURL(input.files[0]);
             }
         }
